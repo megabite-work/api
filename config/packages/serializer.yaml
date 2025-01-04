@@ -1,0 +1,6 @@
+framework:
+    serializer:
+        name_converter: 'App\Resolver\CamelCaseToSnakeCaseNameResolver'
+        default_context:
+            skip_null_values: true
+            datetime_format: 'Y-m-d H:i:s'
