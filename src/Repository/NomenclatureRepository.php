@@ -30,9 +30,9 @@ class NomenclatureRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('n');
 
         $params = new ArrayCollection([
-            new Parameter('mid', $dto->getMultiStoreId(), Types::INTEGER),
-            new Parameter('cid', $dto->getCategoryId(), Types::INTEGER),
-            new Parameter('name', '%'.$dto->getName().'%', Types::STRING),
+            new Parameter('mid', $dto->multiStoreId, Types::INTEGER),
+            new Parameter('cid', $dto->categoryId, Types::INTEGER),
+            new Parameter('name', '%'.$dto->name.'%', Types::STRING),
         ]);
 
         $query = $qb
@@ -53,7 +53,7 @@ class NomenclatureRepository extends ServiceEntityRepository
             ))
             ->setParameters($params);
 
-        return new Paginator($query, $dto->getPage(), $dto->getPerPage(), false);
+        return new Paginator($query, $dto->page, $dto->perPage);
     }
 
     public function findAllNomenclatures(RequestQueryDto $dto): Paginator
@@ -61,8 +61,8 @@ class NomenclatureRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('n');
 
         $params = new ArrayCollection([
-            new Parameter('mid', $dto->getMultiStoreId(), Types::INTEGER),
-            new Parameter('name', '%'.$dto->getName().'%', Types::STRING),
+            new Parameter('mid', $dto->multiStoreId, Types::INTEGER),
+            new Parameter('name', '%'.$dto->name.'%', Types::STRING),
         ]);
 
         $query = $qb
@@ -80,7 +80,7 @@ class NomenclatureRepository extends ServiceEntityRepository
             ))
             ->setParameters($params);
 
-        return new Paginator($query, $dto->getPage(), $dto->getPerPage(), false);
+        return new Paginator($query, $dto->page, $dto->perPage);
     }
 
     public function findAllNomenclaturesWithStoreAndCategory(int $storeId, StoreNomenclatureRequestQueryDto $dto): Paginator
@@ -96,7 +96,7 @@ class NomenclatureRepository extends ServiceEntityRepository
             WHERE c.id = :id OR sn.store = :store'
         )->setParameters(['id' => $dto->getCategoryId(), 'store' => $store]);
 
-        return new Paginator($query, $dto->getPage(), $dto->getPerPage(), false);
+        return new Paginator($query, $dto->page, $dto->perPage);
     }
 
     public function findAllNomenclaturesWithStore(int $storeId, StoreNomenclatureRequestQueryDto $dto): Paginator
@@ -111,7 +111,7 @@ class NomenclatureRepository extends ServiceEntityRepository
             WHERE sn.store = :store'
         )->setParameters(['store' => $store]);
 
-        return new Paginator($query, $dto->getPage(), $dto->getPerPage(), true);
+        return new Paginator($query, $dto->page, $dto->perPage);
     }
 
     public function findNomenclatureById(int $id): ?Nomenclature
@@ -151,9 +151,9 @@ class NomenclatureRepository extends ServiceEntityRepository
     public function IsUniqueBarcodeByMultiStore(RequestDto $dto): ?bool
     {
         $entityManager = $this->getEntityManager();
-        $multiStore = $entityManager->find(MultiStore::class, $dto->getMultiStoreId());
+        $multiStore = $entityManager->find(MultiStore::class, $dto->multiStoreId);
 
-        return null === $this->findOneBy(['multiStore' => $multiStore, 'barcode' => $dto->getBarcode()]);
+        return null === $this->findOneBy(['multiStore' => $multiStore, 'barcode' => $dto->barcode]);
     }
 
     public function IsUniqueNameByMultiStore(RequestDto $dto): bool
@@ -161,8 +161,8 @@ class NomenclatureRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('n');
 
         $params = new ArrayCollection([
-            new Parameter('mid', $dto->getMultiStoreId(), Types::INTEGER),
-            new Parameter('name', $dto->getNameRu(), Types::STRING),
+            new Parameter('mid', $dto->multiStoreId, Types::INTEGER),
+            new Parameter('name', $dto->nameRu, Types::STRING),
         ]);
 
         $query = $qb

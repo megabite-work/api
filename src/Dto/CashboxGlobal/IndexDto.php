@@ -34,7 +34,7 @@ final readonly class IndexDto
             ndsSum: $entity->getNdsSum(),
             discount: $entity->getDiscount(),
             discountSum: $entity->getDiscountSum(),
-            nomenclature: NomenclatureDto::fromEntity($entity->getNomenclature()),
+            nomenclature: NomenclatureDto::fromCashboxGlobal($entity->getNomenclature()),
         );
     }
 }

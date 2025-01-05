@@ -9,8 +9,7 @@ class IsUniqueNameByMultiStoreAction
 {
     public function __construct(
         private NomenclatureRepository $repo
-    ) {
-    }
+    ) {}
 
     public function __invoke(RequestDto $dto): bool
     {

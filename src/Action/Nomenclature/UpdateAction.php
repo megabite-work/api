@@ -2,7 +2,7 @@
 
 namespace App\Action\Nomenclature;
 
-use App\Component\EntityNotFoundException;
+use App\Dto\Nomenclature\IndexDto;
 use App\Dto\Nomenclature\RequestDto;
 use App\Entity\Category;
 use App\Entity\Nomenclature;
@@ -13,101 +13,53 @@ class UpdateAction
 {
     public function __construct(
         private EntityManagerInterface $em
-    ) {
-    }
+    ) {}
 
-    public function __invoke(int $id, RequestDto $dto): Nomenclature
+    public function __invoke(int $id, RequestDto $dto): IndexDto
     {
-        $nomenclature = $this->em->find(Nomenclature::class, $id);
-
-        if (null === $nomenclature) {
-            throw new EntityNotFoundException('not found');
-        }
-
-        $nomenclature = $this->update($dto, $nomenclature);
-
+        $entity = $this->em->find(Nomenclature::class, $id);
+        $entity = $this->update($dto, $entity);
         $this->em->flush();
 
-        return $nomenclature;
+        return IndexDto::fromEntity($entity);
     }
 
-    private function update(RequestDto $dto, Nomenclature $nomenclature): Nomenclature
+    private function update(RequestDto $dto, Nomenclature $entity): Nomenclature
     {
-        $this->updateCategory($nomenclature, $dto);
-        $this->updateName($nomenclature, $dto);
-        $this->updateUnit($nomenclature, $dto);
+        $this->updateCategory($entity, $dto);
+        $this->updateUnit($entity, $dto);
 
-        if (null !== $dto->getQrCode()) {
-            $nomenclature->setQrCode($dto->getQrCode());
-        }
-        if ($dto->getBarcode()) {
-            $nomenclature->setBarcode($dto->getBarcode());
-        }
-        if ($dto->getMxik()) {
-            $nomenclature->setMxik($dto->getMxik());
-        }
-        if ($dto->getBrand()) {
-            $nomenclature->setBrand($dto->getBrand());
-        }
-        if (null !== $dto->getOldPrice()) {
-            $nomenclature->setOldPrice($dto->getOldPrice());
-        }
-        if (null !== $dto->getPrice()) {
-            $nomenclature->setPrice($dto->getPrice());
-        }
-        if (null !== $dto->getOldPriceCourse()) {
-            $nomenclature->setOldPriceCourse($dto->getOldPriceCourse());
-        }
-        if (null !== $dto->getPriceCourse()) {
-            $nomenclature->setPriceCourse($dto->getPriceCourse());
-        }
-        if (null !== $dto->getNds()) {
-            $nomenclature->setNds($dto->getNds());
-        }
-        if (null !== $dto->getDiscount()) {
-            $nomenclature->setDiscount($dto->getDiscount());
-        }
+        $entity->setQrCode($dto->qrCode ?? $entity->getQrCode())
+            ->setBarcode($dto->barcode ?? $entity->getBarcode())
+            ->setMxik($dto->mxik ?? $entity->getMxik())
+            ->setBrand($dto->brand ?? $entity->getBrand())
+            ->setOldPrice($dto->oldPrice ?? $entity->getOldPrice())
+            ->setPrice($dto->price  ?? $entity->getPrice())
+            ->setOldPriceCourse($dto->oldPriceCourse ?? $entity->getOldPriceCourse())
+            ->setPriceCourse($dto->priceCourse ?? $entity->getPriceCourse())
+            ->setNds($dto->nds  ?? $entity->getNds())
+            ->setName([
+                'ru' => $dto->nameRu ?? $entity->getName()['ru'],
+                'uz' => $dto->nameUz ?? $entity->getName()['uz'],
+                'uzc' => $dto->nameUzc ?? $entity->getName()['uzc'],
+            ])
+            ->setDiscount($dto->discount ?? $entity->getDiscount());
 
-        return $nomenclature;
+
+        return $entity;
     }
 
-    private function updateName(Nomenclature $nomenclature, RequestDto $dto): void
+    private function updateCategory(Nomenclature $entity, RequestDto $dto): void
     {
-        if ($dto->getNameUz() || $dto->getNameUzc() || $dto->getNameRu()) {
-            $nomenclatureName = $nomenclature->getName();
-            $name = [
-                'ru' => $dto->getNameRu() ?? $nomenclatureName['ru'],
-                'uz' => $dto->getNameUz() ?? $nomenclatureName['uz'],
-                'uzc' => $dto->getNameUzc() ?? $nomenclatureName['uzc'],
-            ];
-
-            $nomenclature->setName($name);
+        if ($dto->categoryId) {
+            $entity->setCategory($this->em->getReference(Category::class, $dto->categoryId));
         }
     }
 
-    private function updateCategory(Nomenclature $nomenclature, RequestDto $dto): void
+    private function updateUnit(Nomenclature $entity, RequestDto $dto): void
     {
-        if ($dto->getCategoryId()) {
-            $category = $this->em->find(Category::class, $dto->getCategoryId());
-
-            if (null === $category) {
-                throw new EntityNotFoundException('category not found');
-            }
-
-            $nomenclature->setCategory($category);
-        }
-    }
-
-    private function updateUnit(Nomenclature $nomenclature, RequestDto $dto): void
-    {
-        if ($dto->getUnitCode()) {
-            $unit = $this->em->getRepository(Unit::class)->findOneBy(['code' => $dto->getUnitCode()]);
-
-            if (null === $unit) {
-                throw new EntityNotFoundException('unit not found');
-            }
-
-            $nomenclature->setUnit($unit);
+        if ($dto->unitCode) {
+            $entity->setUnit($this->em->getRepository(Unit::class)->findOneBy(['code' => $dto->unitCode]));
         }
     }
 }

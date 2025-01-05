@@ -2,6 +2,10 @@
 
 namespace App\Dto\Nomenclature;
 
+use App\Entity\Category;
+use App\Entity\MultiStore;
+use App\Entity\Unit;
+use App\Validator\Exists;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -10,138 +14,60 @@ final class RequestDto
     public function __construct(
         #[Groups(['nomenclature:create', 'nomenclature:is_unique_barcode', 'nomenclature:is_unique_name'])]
         #[Assert\NotBlank(groups: ['nomenclature:create', 'nomenclature:is_unique_barcode', 'nomenclature:is_unique_name'])]
-        private ?int $multiStoreId,
+        #[Exists(MultiStore::class)]
+        public ?int $multiStoreId,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(groups: ['nomenclature:create'])]
-        private ?int $categoryId,
+        #[Exists(Category::class)]
+        public ?int $categoryId,
         #[Groups(['nomenclature:create', 'nomenclature:update', 'nomenclature:is_unique_barcode'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:is_unique_barcode'])]
-        private ?int $barcode,
+        public ?int $barcode,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(groups: ['nomenclature:create'])]
-        private ?string $nameUz,
+        public ?string $nameUz,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(groups: ['nomenclature:create'])]
-        private ?string $nameUzc,
+        public ?string $nameUzc,
         #[Groups(['nomenclature:create', 'nomenclature:update', 'nomenclature:is_unique_name'])]
         #[Assert\NotBlank(groups: ['nomenclature:create', 'nomenclature:is_unique_name'])]
-        private ?string $nameRu,
+        public ?string $nameRu,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(groups: ['nomenclature:create'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:update'])]
-        private ?int $unitCode,
+        #[Exists(Unit::class, 'code')]
+        public ?int $unitCode,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?string $mxik = null,
+        public ?string $mxik = null,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create'])]
-        private ?string $brand = null,
+        public ?string $brand = null,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $oldPrice = 0,
+        public ?float $oldPrice = 0,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $price = 0,
+        public ?float $price = 0,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $oldPriceCourse = 0,
+        public ?float $oldPriceCourse = 0,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $priceCourse = 0,
+        public ?float $priceCourse = 0,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $nds = 0,
+        public ?float $nds = 0,
         #[Groups(['nomenclature:create', 'nomenclature:update'])]
         #[Assert\NotBlank(allowNull: true, groups: ['nomenclature:create', 'nomenclature:update'])]
-        private ?float $discount = 0,
+        public ?float $discount = 0,
         #[Groups(['nomenclature:update'])]
         #[Assert\Type(['bool', 'null'], groups: ['nomenclature:update'])]
-        private ?bool $qrCode = false
-    ) {
-    }
-
-    public function getNameUz(): ?string
-    {
-        return $this->nameUz;
-    }
-
-    public function getNameUzc(): ?string
-    {
-        return $this->nameUzc;
-    }
-
-    public function getNameRu(): ?string
-    {
-        return $this->nameRu;
-    }
+        public ?bool $qrCode = false
+    ) {}
 
     public function getName(): ?array
     {
-        return ['ru' => $this->getNameRu(), 'uz' => $this->getNameUz(), 'uzc' => $this->getNameUzc()];
-    }
-
-    public function getCategoryId(): ?int
-    {
-        return $this->categoryId;
-    }
-
-    public function getBarcode(): ?int
-    {
-        return $this->barcode;
-    }
-
-    public function getMxik(): ?string
-    {
-        return $this->mxik;
-    }
-
-    public function getBrand(): ?string
-    {
-        return $this->brand;
-    }
-
-    public function getOldPrice(): ?float
-    {
-        return $this->oldPrice;
-    }
-
-    public function getPrice(): ?float
-    {
-        return $this->price;
-    }
-
-    public function getOldPriceCourse(): ?float
-    {
-        return $this->oldPriceCourse;
-    }
-
-    public function getPriceCourse(): ?float
-    {
-        return $this->priceCourse;
-    }
-
-    public function getNds(): ?float
-    {
-        return $this->nds;
-    }
-
-    public function getDiscount(): ?float
-    {
-        return $this->discount;
-    }
-
-    public function getQrCode(): ?bool
-    {
-        return $this->qrCode;
-    }
-
-    public function getMultiStoreId(): ?int
-    {
-        return $this->multiStoreId;
-    }
-
-    public function getUnitCode(): ?int
-    {
-        return $this->unitCode;
+        return ['ru' => $this->nameRu, 'uz' => $this->nameUz, 'uzc' => $this->nameUzc];
     }
 }

@@ -12,15 +12,14 @@ final class RequestQueryDto
         #[Groups(['store_nomenclature:index'])]
         #[Assert\NotBlank(allowNull: true, groups: ['store_nomenclature:index'])]
         #[Assert\Type(type: ['integer', 'null'], groups: ['store_nomenclature:index'])]
-        private ?int $categoryId = null,
+        public ?int $categoryId = null,
         #[Groups(['store_nomenclature:index'])]
         #[Assert\Positive]
-        private int $page = 1,
+        public int $page = 1,
         #[Groups(['store_nomenclature:index'])]
         #[Assert\Positive]
-        private int $perPage = Paginator::ITEMS_PER_PAGE
-    ) {
-    }
+        public int $perPage = Paginator::ITEMS_PER_PAGE
+    ) {}
 
     public function getPage(): int
     {

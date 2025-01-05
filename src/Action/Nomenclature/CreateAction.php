@@ -2,71 +2,59 @@
 
 namespace App\Action\Nomenclature;
 
-use App\Component\EntityNotFoundException;
+use App\Dto\Nomenclature\IndexDto;
 use App\Dto\Nomenclature\RequestDto;
 use App\Entity\Category;
 use App\Entity\MultiStore;
 use App\Entity\Nomenclature;
 use App\Entity\Unit;
+use App\Exception\ErrorException;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CreateAction
 {
     public function __construct(
         private EntityManagerInterface $em
-    ) {
-    }
+    ) {}
 
     public function __invoke(array $dtos): array
     {
-        $this->em->beginTransaction();
-        $entities = [];
-
         try {
-            foreach ($dtos as $dto) {
-                $entity = $this->create($dto);
-                $entities[] = $entity;
-            }
-
+            $this->em->beginTransaction();
+            $entities = array_map(fn($dto): IndexDto => $this->create($dto), $dtos);
             $this->em->flush();
             $this->em->commit();
         } catch (\Throwable $th) {
             $this->em->rollback();
-            throw new EntityNotFoundException($th->getMessage(), $th->getCode());
+            throw new ErrorException('Nomenclature', $th->getMessage(), $th->getCode());
         }
 
         return $entities;
     }
 
-    private function create(RequestDto $dto): Nomenclature
+    private function create(RequestDto $dto): IndexDto
     {
-        $category = $this->em->find(Category::class, $dto->getCategoryId());
-        $multiStore = $this->em->find(MultiStore::class, $dto->getMultiStoreId());
-        $unit = $this->em->getRepository(Unit::class)->findOneBy(['code' => $dto->getUnitCode()]);
-
-        if (null === $category || null === $multiStore || null === $unit) {
-            throw new EntityNotFoundException('category or multiStore or unit not found');
-        }
+        $category = $this->em->getReference(Category::class, $dto->categoryId);
+        $multiStore = $this->em->find(MultiStore::class, $dto->multiStoreId);
+        $unit = $this->em->getRepository(Unit::class)->findOneBy(['code' => $dto->unitCode]);
 
         $entity = (new Nomenclature())
             ->setName($dto->getName())
-            ->setMxik($dto->getMxik())
-            ->setBrand($dto->getBrand())
-            ->setOldPrice($dto->getOldPrice() ?? 0)
-            ->setPrice($dto->getPrice() ?? 0)
-            ->setOldPriceCourse($dto->getOldPriceCourse() ?? 0)
-            ->setPriceCourse($dto->getPriceCourse() ?? 0)
-            ->setNds($dto->getNds() ?? 0)
-            ->setDiscount($dto->getDiscount() ?? 0)
+            ->setMxik($dto->mxik)
+            ->setBrand($dto->brand)
+            ->setOldPrice($dto->oldPrice ?? 0)
+            ->setPrice($dto->price ?? 0)
+            ->setOldPriceCourse($dto->oldPriceCourse ?? 0)
+            ->setPriceCourse($dto->priceCourse ?? 0)
+            ->setNds($dto->nds ?? 0)
+            ->setDiscount($dto->discount ?? 0)
             ->setMultiStore($multiStore)
             ->setUnit($unit)
             ->setCategory($category);
-
-        $this->barcode($multiStore, $entity, $dto->getBarcode());
-
+        $this->barcode($multiStore, $entity, $dto->barcode);
         $this->em->persist($entity);
 
-        return $entity;
+        return IndexDto::fromEntity($entity);
     }
 
     private function barcode(MultiStore $multiStore, Nomenclature $nomenclature, ?int $barcode): void

@@ -2,24 +2,17 @@
 
 namespace App\Action\Nomenclature;
 
-use App\Component\EntityNotFoundException;
-use App\Entity\Nomenclature;
+use App\Dto\Nomenclature\IndexDto;
 use App\Repository\NomenclatureRepository;
 
 class ShowAction
 {
-    public function __construct(private NomenclatureRepository $repo)
+    public function __construct(
+        private NomenclatureRepository $repo
+    ) {}
+
+    public function __invoke(int $id): IndexDto
     {
-    }
-
-    public function __invoke(int $id): Nomenclature
-    {
-        $nomenclature = $this->repo->findNomenclatureById($id);
-
-        if (null == $nomenclature) {
-            throw new EntityNotFoundException('not found');
-        }
-
-        return $nomenclature;
+        return IndexDto::fromShowAction($this->repo->findNomenclatureById($id));
     }
 }
