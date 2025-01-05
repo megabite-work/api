@@ -5,35 +5,67 @@ declare(strict_types=1);
 namespace App\Dto\MultiStore;
 
 use App\Dto\Address\IndexDto as AddressDto;
+use App\Dto\Phone\IndexDto as PhoneDto;
+use App\Dto\Store\IndexDto as StoreDto;
 use App\Dto\WebCredential\IndexDto as WebCredentialDto;
-use Symfony\Component\Serializer\Attribute\Groups;
+use App\Entity\MultiStore;
 
 final readonly class IndexDto
 {
+    /** 
+     * @param \App\Dto\Phone\IndexDto[] $stores
+     * @param \App\Dto\Store\IndexDto[] $phones
+     */
     public function __construct(
-        #[Groups(['multi_store:index', 'multi_store:show', 'multi_store:create', 'multi_store:update', 'user:me'])]
         public ?int $id = null,
-        #[Groups(['multi_store:index', 'multi_store:show', 'multi_store:create', 'multi_store:update', 'user:me'])]
         public ?string $name = null,
-        #[Groups(['multi_store:index', 'multi_store:show', 'multi_store:create', 'multi_store:update', 'user:me'])]
         public string|array|null $profit = null,
-        #[Groups(['multi_store:index', 'multi_store:show', 'multi_store:create', 'multi_store:update', 'user:me'])]
         public ?int $barcodeTtn = null,
-        #[Groups(['multi_store:index', 'multi_store:show', 'multi_store:create', 'multi_store:update', 'user:me'])]
         public ?int $nds = null,
-        #[Groups(['multi_store:show'])]
-        /** @var \App\Dto\Store\IndexDto[] */
-        public ?array $stores = null,
-        #[Groups(['multi_store:show'])]
-        public ?WebCredentialDto $webCredential = null,
-        #[Groups(['multi_store:show', 'multi_store:update'])]
-        public ?AddressDto $address = null,
-        #[Groups(['multi_store:show', 'multi_store:update'])]
-        /** @var \App\Dto\Phone\IndexDto[] */
-        public ?array $phones = null,
-        #[Groups(['multi_store:index'])]
         public ?int $storesCount = null,
-        #[Groups(['multi_store:index'])]
         public ?int $workersCount = null,
+        public ?WebCredentialDto $webCredential = null,
+        public ?AddressDto $address = null,
+        public ?array $stores = null,
+        public ?array $phones = null,
     ) {}
+
+    public static function fromEntity(?MultiStore $entity): static
+    {
+        return new static(
+            id: $entity?->getId(),
+            name: $entity?->getName(),
+            profit: $entity?->getProfit(),
+            barcodeTtn: $entity?->getBarcodeTtn(),
+            nds: $entity?->getNds(),
+        );
+    }
+
+    public static function fromIndexAction(?MultiStore $entity): static
+    {
+        return new static(
+            id: $entity->getId(),
+            name: $entity->getName(),
+            profit: $entity->getProfit(),
+            barcodeTtn: $entity->getBarcodeTtn(),
+            nds: $entity->getNds(),
+            storesCount: $entity->getStoresCount(),
+            workersCount: $entity->getWorkersCount(),
+        );
+    }
+
+    public static function fromShowAction(?MultiStore $entity): static
+    {
+        return new static(
+            id: $entity->getId(),
+            name: $entity->getName(),
+            profit: $entity->getProfit(),
+            barcodeTtn: $entity->getBarcodeTtn(),
+            nds: $entity->getNds(),
+            stores: StoreDto::fromEntityArray($entity->getStores()->toArray()),
+            webCredential: WebCredentialDto::fromEntity($entity->getWebCredential()),
+            address: AddressDto::fromEntity($entity->getAddress()),
+            phones: PhoneDto::fromEntityArray($entity->getPhones()->toArray()),
+        );
+    }
 }

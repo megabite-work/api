@@ -2,9 +2,8 @@
 
 namespace App\Action\MultiStore;
 
-use App\Component\EntityNotFoundException;
+use App\Dto\MultiStore\IndexDto;
 use App\Dto\MultiStore\RequestDto;
-use App\Entity\MultiStore;
 use App\Repository\AddressRepository;
 use App\Repository\MultiStoreRepository;
 use App\Repository\PhoneRepository;
@@ -17,38 +16,18 @@ class UpdateAction
         private PhoneRepository $phoneRepository,
         private AddressRepository $addressRepository,
         private MultiStoreRepository $multiStoreRepository,
-    ) {
-    }
+    ) {}
 
-    public function __invoke(int $id, RequestDto $dto): MultiStore
+    public function __invoke(int $id, RequestDto $dto): IndexDto
     {
-        $multiStore = $this->updateMultiStore($id, $dto);
-
-        $this->phoneRepository->checkPhoneExistsAndCreate($multiStore, $dto->getPhones());
-        $this->addressRepository->checkAddressExistsAndUpdateOrCreate($multiStore, $dto);
+        $entity = $this->multiStoreRepository->findMultiStoreByIdWithAddressAndPhones($id);
+        $entity->setName($dto->name ?? $entity->getName())
+            ->setProfit($dto->profit ?? $entity->getProfit())
+            ->setNds($dto->nds ?? $entity->getNds());
+        $this->phoneRepository->checkPhoneExistsAndCreate($entity, $dto->phones);
+        $this->addressRepository->checkAddressExistsAndUpdateOrCreate($entity, $dto);
         $this->em->flush();
 
-        return $multiStore;
-    }
-
-    private function updateMultiStore(int $id, RequestDto $dto)
-    {
-        $multiStore = $this->multiStoreRepository->findMultiStoreByIdWithAddressAndPhones($id);
-
-        if (null === $multiStore) {
-            throw new EntityNotFoundException('not found');
-        }
-
-        if ($dto->getName()) {
-            $multiStore->setName($dto->getName());
-        }
-        if ($dto->getProfit()) {
-            $multiStore->setProfit($dto->getProfit());
-        }
-        if ($dto->getNds()) {
-            $multiStore->setNds($dto->getNds());
-        }
-
-        return $multiStore;
+        return IndexDto::fromEntity($entity);
     }
 }

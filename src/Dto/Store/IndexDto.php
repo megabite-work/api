@@ -43,4 +43,9 @@ final readonly class IndexDto
             isActive: $entity->getIsActive(),
         );
     }
+
+    public static function fromEntityArray(?array $entities = []): array
+    {
+        return array_map(fn(Store $entity) => static::fromEntity($entity), $entities);
+    }
 }

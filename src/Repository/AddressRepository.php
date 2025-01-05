@@ -19,12 +19,12 @@ class AddressRepository extends ServiceEntityRepository
     public function createAddress($dto): Address
     {
         $address = (new Address())
-            ->setRegion($dto->getRegion())
-            ->setDistrict($dto->getDistrict())
-            ->setStreet($dto->getStreet())
-            ->setHouse($dto->getHouse())
-            ->setLatitude($dto->getLatitude())
-            ->setLongitude($dto->getLongitude());
+            ->setRegion($dto->region)
+            ->setDistrict($dto->district)
+            ->setStreet($dto->street)
+            ->setHouse($dto->house)
+            ->setLatitude($dto->longitude)
+            ->setLongitude($dto->latitude);
 
         $this->getEntityManager()->persist($address);
 
@@ -35,27 +35,27 @@ class AddressRepository extends ServiceEntityRepository
     {
         $address = $entity->getAddress();
 
-        if (null === $address && $dto->getRegion() && $dto->getDistrict() && $dto->getStreet() && $dto->getHouse()) {
+        if (null === $address && $dto->region && $dto->district && $dto->street && $dto->house) {
             $address = $this->createAddress($dto);
             $entity->setAddress($address);
         } else {
-            if ($dto->getRegion()) {
-                $address->setRegion($dto->getRegion());
+            if ($dto->region) {
+                $address->setRegion($dto->region);
             }
-            if ($dto->getDistrict()) {
-                $address->setDistrict($dto->getDistrict());
+            if ($dto->district) {
+                $address->setDistrict($dto->district);
             }
-            if ($dto->getStreet()) {
-                $address->setStreet($dto->getStreet());
+            if ($dto->street) {
+                $address->setStreet($dto->street);
             }
-            if ($dto->getHouse()) {
-                $address->setHouse($dto->getHouse());
+            if ($dto->house) {
+                $address->setHouse($dto->house);
             }
-            if ($dto->getLongitude()) {
-                $address->setLongitude($dto->getLongitude());
+            if ($dto->longitude) {
+                $address->setLongitude($dto->longitude);
             }
-            if ($dto->getLatitude()) {
-                $address->setLatitude($dto->getLatitude());
+            if ($dto->latitude) {
+                $address->setLatitude($dto->latitude);
             }
         }
     }
